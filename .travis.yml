@@ -3,9 +3,6 @@ os:
   - linux
   - osx
 rust:
-  - stable
-  - beta
+#  - stable
+#  - beta
   - nightly
-matrix:
-  allow_failures:
-    - rust: nightly
