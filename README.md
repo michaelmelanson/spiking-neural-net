@@ -42,7 +42,16 @@ If you chart this data over time, you'll notice that the sodium-potassium channe
 This example creates a network of neurons and runs it. It logs a line any time one of the neurons emits an action potential (a 'spike'). In this case we're passing the `--real-time` flag so it runs the simulation at the same pace as the wall clock.
 
 ```
-cargo run --example network-spike-log -- --real-time
+$ cargo run --example network-spike-log -- --size=10
+   Compiling spiking-neural-net v0.1.0 (file:///path/to/spiking-neural-net)
+    Finished dev [unoptimized + debuginfo] target(s) in 1.84 secs
+     Running `target/debug/examples/network-spike-log --size=10`
+t=660: neuron 8 is spiking
+t=670: neuron 1 is spiking
+t=680: neuron 9 is spiking
+t=690: neuron 7 is spiking
+t=700: neuron 8 is spiking
+...
 ```
 
 It records a spike whenever the voltage across the sodium-potassium ion channel (see the previous example) exceeds -3.5mV.
