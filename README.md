@@ -19,7 +19,7 @@ This is a Rust library, so you can include it in your projects to use it. There 
 
 ### single-neuron-trace
 
-This example creates a single-neuron network and runs it in real-time. At each time step, in prints a line with the current state of the neuron.
+This example creates a single-neuron network and runs it. At each time step, in prints a line with the current state of the neuron.
 
 ```
 $ cargo run --example single-neuron-trace > output.csv
@@ -39,10 +39,10 @@ If you chart this data over time, you'll notice that the sodium-potassium channe
 
 ### network-spike-log
 
-This example creates a network of neurons and runs it in real-time. It logs a line any time one of the neurons emits an action potential (a 'spike').
+This example creates a network of neurons and runs it. It logs a line any time one of the neurons emits an action potential (a 'spike'). In this case we're passing the `--real-time` flag so it runs the simulation at the same pace as the wall clock.
 
 ```
-cargo run --example network-spike-log
+cargo run --example network-spike-log -- --real-time
 ```
 
 It records a spike whenever the voltage across the sodium-potassium ion channel (see the previous example) exceeds -3.5mV.
