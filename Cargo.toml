@@ -1,5 +1,7 @@
 [package]
 name = "spiking-neural-net"
+description = "A spiking neural network simulation library"
+repository = "https://github.com/michaelmelanson/spiking-neural-net"
 version = "0.1.0"
 authors = ["Michael Melanson <michael@michaelmelanson.net>"]
 
