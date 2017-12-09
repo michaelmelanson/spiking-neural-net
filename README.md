@@ -22,10 +22,10 @@ This is a Rust library, so you can include it in your projects to use it. There 
 This example creates a single-neuron network and runs it. At each time step, in prints a line with the current state of the neuron.
 
 ```
-$ cargo run --example single-neuron-trace > output.csv
+$ cargo run --example single-neuron-trace -- --morphology data/morphologies/hindmarsh-rose/typical.yml > output.csv
    Compiling spiking-neural-net v0.1.0 (file:///path/to/spiking-neural-net)
     Finished dev [unoptimized + debuginfo] target(s) in 2.11 secs
-     Running `target/debug/examples/single-neuron-trace`
+     Running `target/debug/examples/single-neuron-trace --morphology data/morphologies/hindmarsh-rose/typical.yml`
 0, -0.8389827395482743, -3.16059326818377, 4.380507094353632, 5
 10, -0.8248061250730747, -3.0936129998394075, 4.380376416015061, 5
 20, -0.8127511024678337, -3.0228727527871437, 4.380250920454535, 5
@@ -52,10 +52,10 @@ If you chart this data over time, you'll notice that the sodium-potassium channe
 This example creates a network of neurons and runs it. It logs a line any time one of the neurons emits an action potential (a 'spike'). In this case we're passing the `--real-time` flag so it runs the simulation at the same pace as the wall clock.
 
 ```
-$ cargo run --example network-spike-log -- --size=10
+$ cargo run --example network-spike-log -- --size=10 --morphology data/morphologies/hindmarsh-rose/typical.yml
    Compiling spiking-neural-net v0.1.0 (file:///path/to/spiking-neural-net)
     Finished dev [unoptimized + debuginfo] target(s) in 1.84 secs
-     Running `target/debug/examples/network-spike-log --size=10`
+     Running `target/debug/examples/network-spike-log --size=10 --morphology data/morphologies/hindmarsh-rose/typical.yml`
 t=660: neuron 8 is spiking
 t=670: neuron 1 is spiking
 t=680: neuron 9 is spiking
