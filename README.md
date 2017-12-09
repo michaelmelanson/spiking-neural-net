@@ -38,7 +38,7 @@ $ cargo run --example single-neuron-trace > output.csv
 ...
 ```
 
-This will produce a CSV file with five columns: the time (in milliseconds), followed by the potential of the four variables of the neuron:
+This will produce a CSV file with five columns: the time (in milliseconds), followed by the the four variables of the neuron model representing:
 
 * The membrane potential (mV)
 * The voltage of the sodium-potassium ion channel (mV)
