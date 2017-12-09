@@ -42,7 +42,8 @@ fn main() {
             if network_time > real_time {
                 let diff = network_time - real_time;
                 sleep(diff);
-            } else if network_time + slippage < real_time {
+            } else if real_time.as_secs() > 0 && // this happens spuriously early in the run
+                    network_time + slippage < real_time {
                 let diff = real_time - network_time;
                 println!("Fallen behind real-time by {:?}", diff);
                 slippage = diff;
