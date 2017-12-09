@@ -1,9 +1,6 @@
 use std;
 use rand;
-use freude::{
-    RungeKutta4,
-    Stepper
-};
+use freude::{RungeKutta4, Stepper};
 use tuple::T4;
 use rayon::prelude::*;
 
@@ -20,7 +17,7 @@ struct HindmarshRoseParams {
     s: f64,
     x_r: f64,
     t_s: f64,
-    epsp_amp: f64
+    epsp_amp: f64,
 }
 
 type HindmarshRoseState = T4<f64, f64, f64, f64>;
@@ -39,71 +36,74 @@ unsafe impl Send for HindmarshRoseNeuron {}
 unsafe impl Sync for HindmarshRoseNeuron {}
 
 impl NeuronModel for HindmarshRoseNeuron {
-  fn new(id: usize, num_neurons: usize, dt: f64) -> Self {
-    let params = HindmarshRoseParams {
-        a: 1.,
-        b: 3.,
-        c: 1.,
-        d: 5.,
-        beta: 1.,
-        r: 0.001,
-        s: 4.,
-        x_r: -8./5.,
-        t_s: 1./10.,
-        epsp_amp: 0.1
-    };
+    fn new(id: usize, num_neurons: usize, dt: f64) -> Self {
+        let params = HindmarshRoseParams {
+            a: 1.,
+            b: 3.,
+            c: 1.,
+            d: 5.,
+            beta: 1.,
+            r: 0.001,
+            s: 4.,
+            x_r: -8. / 5.,
+            t_s: 1. / 10.,
+            epsp_amp: 0.1,
+        };
 
-    let morphology = hindmarsh_rose(params.clone());
-    let state: HindmarshRoseState = T4(
-        -0.8 + ((rand::random::<f64>() * 0.2) - 0.1),
-        -3.2 + ((rand::random::<f64>() * 0.2) - 0.1),
-        4.3 + ((rand::random::<f64>() * 0.2) - 0.1),
-        5.0 + ((rand::random::<f64>() * 0.2) - 0.1));
-    let integrator = RungeKutta4::new(&state, dt);
-    let mut weights = Vec::new();
-    for _ in 0..num_neurons {
-        weights.push((rand::random::<f64>() * 2.) - 1.);
+        let morphology = hindmarsh_rose(params.clone());
+        let state: HindmarshRoseState = T4(-0.8 + ((rand::random::<f64>() * 0.2) - 0.1),
+                                           -3.2 + ((rand::random::<f64>() * 0.2) - 0.1),
+                                           4.3 + ((rand::random::<f64>() * 0.2) - 0.1),
+                                           5.0 + ((rand::random::<f64>() * 0.2) - 0.1));
+        let integrator = RungeKutta4::new(&state, dt);
+        let mut weights = Vec::new();
+        for _ in 0..num_neurons {
+            weights.push((rand::random::<f64>() * 2.) - 1.);
+        }
+
+        HindmarshRoseNeuron {
+            id: id,
+            morphology: morphology,
+            params: params,
+            state: state,
+            weights: weights,
+            integrator: integrator,
+        }
     }
 
-    HindmarshRoseNeuron {
-        id: id,
-        morphology: morphology,
-        params: params,
-        state: state,
-        weights: weights,
-        integrator: integrator
+    fn id(&self) -> usize {
+        return self.id;
     }
-  }
 
-  fn id(&self) -> usize { return self.id; }
+    fn is_spiking(&self) -> bool {
+        return self.state.1 > -3.5;
+    }
 
-  fn is_spiking(&self) -> bool {
-      return self.state.1 > -3.5;
-  }
+    fn apply_epsps(&mut self, epsp_times: &Vec<f64>, time: f64) {
+        assert_eq!(epsp_times.len(), self.weights.len());
 
-  fn apply_epsps(&mut self, epsp_times: &Vec<f64>, time: f64) {
-    assert_eq!(epsp_times.len(), self.weights.len());
+        let weights = &self.weights;
+        let epsp_amp = self.params.epsp_amp;
+        let epsp_i: f64 = epsp_times.par_iter()
+            .zip(weights.par_iter())
+            .map(|(epsp_time, weight)| {
+                let epsp_dt = time - epsp_time;
+                let a = 1. / 3.;
+                let epsp_amp = weight * epsp_amp;
+                let decay = a * std::f64::consts::PI.sqrt() * -(epsp_dt / a).powi(2).exp();
+                let dirac = epsp_amp / decay;
 
-    let weights = &self.weights;
-    let epsp_amp = self.params.epsp_amp;
-    let epsp_i: f64 = epsp_times.par_iter()
-        .zip(weights.par_iter())
-        .map(|(epsp_time, weight)| {
-            let epsp_dt = time - epsp_time;
-            let a = 1./3.;
-            let epsp_amp = weight * epsp_amp;
-            let decay = a * std::f64::consts::PI.sqrt() * -(epsp_dt / a).powi(2).exp();
-            let dirac = epsp_amp / decay;
+                -dirac / epsp_dt
+            })
+            .sum();
 
-            -dirac / epsp_dt
-        }).sum();
+        // the '+ 5.' here adds a constant current to trigger the neuron to fire spontaneously
+        self.state.3 = epsp_i + 5.;
+    }
 
-    self.state.3 = epsp_i + 5.;
-  }
-
-  fn advance(&mut self, dt: f64) {
-      self.integrator.integrate_time(&mut self.morphology, &mut self.state, dt);
-  }
+    fn advance(&mut self, dt: f64) {
+        self.integrator.integrate_time(&mut self.morphology, &mut self.state, dt);
+    }
 }
 
 fn hindmarsh_rose(params: HindmarshRoseParams) -> HindmarshRoseMorphology {
@@ -112,16 +112,13 @@ fn hindmarsh_rose(params: HindmarshRoseParams) -> HindmarshRoseMorphology {
         let psi_x = params.c - params.d * x.powi(2);
 
         let dx_dt = y + sigma_x - z + i;
-        let dy_dt = psi_x - params.beta*y;
+        let dy_dt = psi_x - params.beta * y;
         let dz_dt = params.r * (params.s * (x - params.x_r) - z);
         let di_dt = 0.;
 
-        T4(
-            dx_dt / params.t_s, 
-            dy_dt / params.t_s, 
-            dz_dt / params.t_s,
-            di_dt / params.t_s
-        )
+        T4(dx_dt / params.t_s,
+           dy_dt / params.t_s,
+           dz_dt / params.t_s,
+           di_dt / params.t_s)
     })
 }
-
