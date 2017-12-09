@@ -4,9 +4,9 @@ use freude::{RungeKutta4, Stepper};
 use tuple::T4;
 use rayon::prelude::*;
 
-use super::NeuronModel;
+use super::{NeuronModel, NeuronMorphology};
 
-#[derive(Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 struct HindmarshRoseParams {
     a: f64,
     b: f64,
@@ -20,41 +20,52 @@ struct HindmarshRoseParams {
     epsp_amp: f64,
 }
 
-type HindmarshRoseState = T4<f64, f64, f64, f64>;
-type HindmarshRoseMorphology = Box<Fn(HindmarshRoseState) -> HindmarshRoseState>;
+#[derive(Serialize, Deserialize, Clone, Debug)]
+struct HindmarshRoseSerializedState {
+    x: f64,
+    y: f64,
+    z: f64,
+    i: f64,
+}
+
+impl HindmarshRoseSerializedState {
+    fn to_tuple(&self) -> T4<f64, f64, f64, f64> {
+        T4(self.x, self.y, self.z, self.i)
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct HindmarshRoseMorphology {
+    params: HindmarshRoseParams,
+    state: HindmarshRoseSerializedState,
+}
+
+impl NeuronMorphology for HindmarshRoseMorphology {
+    type Model = HindmarshRoseNeuron;
+}
+
+type HindmarshRoseStateTuple = T4<f64, f64, f64, f64>;
+type HindmarshRoseFunction = Box<Fn(HindmarshRoseStateTuple) -> HindmarshRoseStateTuple>;
 
 pub struct HindmarshRoseNeuron {
     id: usize,
-    morphology: HindmarshRoseMorphology,
+    function: HindmarshRoseFunction,
     params: HindmarshRoseParams,
-    pub state: HindmarshRoseState,
+    pub state: HindmarshRoseStateTuple,
     weights: Vec<f64>,
-    integrator: RungeKutta4<HindmarshRoseState>,
+    integrator: RungeKutta4<HindmarshRoseStateTuple>,
 }
 
 unsafe impl Send for HindmarshRoseNeuron {}
 unsafe impl Sync for HindmarshRoseNeuron {}
 
-impl NeuronModel for HindmarshRoseNeuron {
-    fn new(id: usize, num_neurons: usize, dt: f64) -> Self {
-        let params = HindmarshRoseParams {
-            a: 1.,
-            b: 3.,
-            c: 1.,
-            d: 5.,
-            beta: 1.,
-            r: 0.001,
-            s: 4.,
-            x_r: -8. / 5.,
-            t_s: 1. / 10.,
-            epsp_amp: 0.1,
-        };
+impl NeuronModel<HindmarshRoseMorphology> for HindmarshRoseNeuron {
+    fn new(id: usize, num_neurons: usize, dt: f64, morphology: &HindmarshRoseMorphology) -> Self {
+        let params = morphology.params.clone();
 
-        let morphology = hindmarsh_rose(params.clone());
-        let state: HindmarshRoseState = T4(-0.8 + ((rand::random::<f64>() * 0.2) - 0.1),
-                                           -3.2 + ((rand::random::<f64>() * 0.2) - 0.1),
-                                           4.3 + ((rand::random::<f64>() * 0.2) - 0.1),
-                                           5.0 + ((rand::random::<f64>() * 0.2) - 0.1));
+        let function = hindmarsh_rose(params.clone());
+        let state: HindmarshRoseStateTuple = morphology.state.to_tuple();
+
         let integrator = RungeKutta4::new(&state, dt);
         let mut weights = Vec::new();
         for _ in 0..num_neurons {
@@ -63,7 +74,7 @@ impl NeuronModel for HindmarshRoseNeuron {
 
         HindmarshRoseNeuron {
             id: id,
-            morphology: morphology,
+            function: function,
             params: params,
             state: state,
             weights: weights,
@@ -102,12 +113,12 @@ impl NeuronModel for HindmarshRoseNeuron {
     }
 
     fn advance(&mut self, dt: f64) {
-        self.integrator.integrate_time(&mut self.morphology, &mut self.state, dt);
+        self.integrator.integrate_time(&mut self.function, &mut self.state, dt);
     }
 }
 
-fn hindmarsh_rose(params: HindmarshRoseParams) -> HindmarshRoseMorphology {
-    Box::new(move |T4(x, y, z, i): HindmarshRoseState| -> HindmarshRoseState {
+fn hindmarsh_rose(params: HindmarshRoseParams) -> HindmarshRoseFunction {
+    Box::new(move |T4(x, y, z, i): HindmarshRoseStateTuple| -> HindmarshRoseStateTuple {
         let sigma_x = -params.a * x.powi(3) + params.b * x.powi(2);
         let psi_x = params.c - params.d * x.powi(2);
 

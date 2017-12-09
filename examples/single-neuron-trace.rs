@@ -1,7 +1,7 @@
-extern crate freude;
-extern crate tuple;
+extern crate serde;
+extern crate serde_yaml;
 extern crate rayon;
-extern crate rand;
+
 extern crate spiking_neural_net;
 
 #[macro_use]
@@ -12,8 +12,10 @@ use std::thread::sleep;
 
 use clap::{Arg, App};
 
+use std::fs::File;
+
 use spiking_neural_net::network::Network;
-use spiking_neural_net::neuron::models::HindmarshRoseNeuron;
+use spiking_neural_net::neuron::models::HindmarshRoseMorphology;
 
 use rayon::prelude::*;
 
@@ -24,11 +26,21 @@ fn main() {
         .arg(Arg::with_name("realtime")
             .long("real-time")
             .help("Maintain pace with the wall clock"))
+        .arg(Arg::with_name("morphology")
+            .long("morphology")
+            .takes_value(true)
+            .help("Path to a file containing a description of a neuron type")
+            .required(true))
         .get_matches();
 
     let real_time: bool = matches.is_present("realtime");
     let dt = 0.01;
-    let mut network = Network::<HindmarshRoseNeuron>::new(1, dt);
+
+    let morphology_path = matches.value_of("morphology").expect("required parameter not provided");
+    let morphology_file = File::open(morphology_path).expect("can't open morphology");
+    let morphology: HindmarshRoseMorphology = serde_yaml::from_reader(morphology_file).unwrap();
+
+    let mut network = Network::<HindmarshRoseMorphology>::new(1, dt, &morphology);
 
     let wall_clock = time::Instant::now();
 
@@ -47,7 +59,7 @@ fn main() {
                 let diff = real_time - network_time;
                 println!("Fallen behind real-time by {:?}", diff);
                 slippage = diff;
-            }            
+            }
         }
 
 

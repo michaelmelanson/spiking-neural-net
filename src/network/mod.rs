@@ -1,21 +1,22 @@
 use std;
 use rayon::prelude::*;
 
-use super::neuron::{NeuronModel, advance_neuron, TimeStepResult};
+use super::neuron::{NeuronModel, NeuronMorphology, advance_neuron, TimeStepResult};
 
-pub struct Network<N: NeuronModel + Send + Sync> {
-    pub neurons: Vec<N>,
+pub struct Network<M: NeuronMorphology> {
+    pub neurons: Vec<M::Model>,
     epsp_times: Vec<f64>,
     dt: f64,
     pub time: f64,
 }
 
-impl<N: NeuronModel + Send + Sync> Network<N> {
-    pub fn new(num_neurons: usize, dt: f64) -> Network<N> {
-        let mut neurons: Vec<N> = Vec::new();
+impl<M: NeuronMorphology> Network<M> {
+    pub fn new(num_neurons: usize, dt: f64, morphology: &M) -> Network<M> {
+        let mut neurons: Vec<M::Model> = Vec::new();
 
         for i in 0..num_neurons {
-            let neuron = N::new(i as usize, num_neurons, dt);
+            let neuron = M::Model::new(i as usize, num_neurons, dt, morphology);
+
             neurons.push(neuron);
         }
 
