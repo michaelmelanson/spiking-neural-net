@@ -8,6 +8,9 @@ tuple = "0.3.5"
 rayon = "0.9.0"
 rand = "0.3"
 
+[dev-dependencies]
+clap = "2.29.0"
+
 [dependencies.freude]
 version = "0.4.0"
 default-features = false
