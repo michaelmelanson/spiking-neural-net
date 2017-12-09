@@ -2,7 +2,7 @@
 
 This is a Rust library, plus some example tools, that simulates a spiking neural network. 
 
-It currently supports a (Hindmarsh-Rose model)[https://en.wikipedia.org/wiki/Hindmarsh%E2%80%93Rose_model] which can simulate most types of spiking behaviour seen in biological neurons.
+It currently supports a [Hindmarsh-Rose model](https://en.wikipedia.org/wiki/Hindmarsh%E2%80%93Rose_model) which can simulate most types of spiking behaviour seen in biological neurons.
 
 Tests on my development machine show that it can simulate a network of about 1300 neurons in real-time when built in release mode.
 
