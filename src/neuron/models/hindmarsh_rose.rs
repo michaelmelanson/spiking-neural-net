@@ -4,7 +4,7 @@ use freude::{RungeKutta4, Stepper};
 use tuple::T4;
 use rayon::prelude::*;
 
-use super::{NeuronModel, NeuronMorphology};
+use super::{NeuronModel, NeuronMorphology, TimeStepResult};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 struct HindmarshRoseParams {
@@ -112,8 +112,19 @@ impl NeuronModel<HindmarshRoseMorphology> for HindmarshRoseNeuron {
         self.state.3 = epsp_i + 5.;
     }
 
-    fn advance(&mut self, dt: f64) {
+    fn step(&mut self, epsp_times: &Vec<f64>, time: f64, dt: f64) -> TimeStepResult {
+        let was_spiking = self.is_spiking();
+
+        self.apply_epsps(epsp_times, time);
         self.integrator.integrate_time(&mut self.function, &mut self.state, dt);
+
+        let is_spiking = self.is_spiking();
+
+        TimeStepResult {
+            id: self.id,
+            spike_start: is_spiking && !was_spiking,
+            spike_end: was_spiking && !is_spiking,
+        }
     }
 }
 

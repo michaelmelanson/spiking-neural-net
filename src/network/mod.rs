@@ -1,7 +1,7 @@
 use std;
 use rayon::prelude::*;
 
-use super::neuron::{NeuronModel, NeuronMorphology, advance_neuron, TimeStepResult};
+use super::neuron::{NeuronModel, NeuronMorphology, TimeStepResult};
 
 pub struct Network<M: NeuronMorphology> {
     pub neurons: Vec<M::Model>,
@@ -15,9 +15,7 @@ impl<M: NeuronMorphology> Network<M> {
         let mut neurons: Vec<M::Model> = Vec::new();
 
         for i in 0..num_neurons {
-            let neuron = M::Model::new(i as usize, num_neurons, dt, morphology);
-
-            neurons.push(neuron);
+            neurons.push(M::Model::new(i as usize, num_neurons, dt, morphology));
         }
 
         let mut epsp_times = Vec::new();
@@ -41,7 +39,7 @@ impl<M: NeuronMorphology> Network<M> {
         let dt = self.dt;
         let results = self.neurons
             .par_iter_mut()
-            .map(|n| advance_neuron(n, &epsp_times, time, dt))
+            .map(|n| n.step(&epsp_times, time, dt))
             .collect::<Vec<_>>();
 
         results.par_iter()
