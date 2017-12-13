@@ -1,23 +1,18 @@
 extern crate serde;
 extern crate serde_yaml;
 extern crate rayon;
-
-extern crate spiking_neural_net;
-
 #[macro_use]
 extern crate clap;
+extern crate spiking_neural_net;
 
 use std::time;
 use std::thread::sleep;
+use std::fs::File;
 
 use clap::{Arg, App};
 
-use std::fs::File;
-
-use spiking_neural_net::network::Network;
-use spiking_neural_net::neuron::models::HindmarshRoseMorphology;
-
-use rayon::prelude::*;
+use spiking_neural_net::neuron::models::{HindmarshRoseNeuron, HindmarshRoseMorphology};
+use spiking_neural_net::neuron::NeuronModel;
 
 fn main() {
     let matches = App::new("Single neuron trace")
@@ -40,16 +35,17 @@ fn main() {
     let morphology_file = File::open(morphology_path).expect("can't open morphology");
     let morphology: HindmarshRoseMorphology = serde_yaml::from_reader(morphology_file).unwrap();
 
-    let mut network = Network::<HindmarshRoseMorphology>::new(1, dt, &morphology);
+    let mut neuron = HindmarshRoseNeuron::new(0, 0, dt, &morphology);
 
     let wall_clock = time::Instant::now();
+    let mut simulation_time = 0.;
 
     let mut slippage = time::Duration::new(0, 0);
 
-    while network.time < 10. {
-        let network_time_ms = (1000. * network.time) as u64;
+    while simulation_time < 10. {
+        let simulation_time_ms = (1000. * simulation_time) as u64;
         if real_time {
-            let network_time = time::Duration::from_millis(network_time_ms);
+            let network_time = time::Duration::from_millis(simulation_time_ms);
             let real_time = wall_clock.elapsed();
             if network_time > real_time {
                 let diff = network_time - real_time;
@@ -63,15 +59,14 @@ fn main() {
         }
 
 
-        network.advance();
+        neuron.step(&Vec::new(), simulation_time, dt);
+        simulation_time += dt;
 
-        network.neurons.par_iter_mut().for_each(|n| {
-            println!("{}, {}, {}, {}, {}",
-                     network_time_ms,
-                     n.state.0,
-                     n.state.1,
-                     n.state.2,
-                     n.state.3);
-        });
+        println!("{}, {}, {}, {}, {}",
+                 simulation_time_ms,
+                 neuron.state.0,
+                 neuron.state.1,
+                 neuron.state.2,
+                 neuron.state.3);
     }
 }
