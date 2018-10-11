@@ -14,11 +14,10 @@ serde = "1.0"
 serde_derive = "1.0"
 serde_yaml = "0.8.5"
 
+[dependencies.freude]
+version = "0.5.0"
+features = ["tuple"]
+
 [dev-dependencies]
 clap = "2.29.0"
 
-[dependencies.freude]
-git = "https://github.com/michaelmelanson/rust-freude.git"
-branch = "patch-1" 
-default-features = false
-features = ["tuple"]
