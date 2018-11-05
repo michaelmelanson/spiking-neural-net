@@ -1,8 +1,11 @@
 use specs::prelude::*;
 
-use simulation::{
+use simulation::components::neuron::{
     Neuron,
     Spiking,
+};
+
+use simulation::{
     SimulationTime
 };
 
@@ -50,7 +53,7 @@ impl <'a> System<'a> for HindmarshRoseIntegrator {
             // I took this idea from an implementation of Hindmarsh-Rose but haven't really verified
             // that it's necessary.
 
-            for _ in 0..1 {
+            for _ in 0..2 {
                 let sigma_x = -morphology.a * model.x.powi(3) + morphology.b * model.x.powi(2);
                 let psi_x = morphology.c - morphology.d * model.x.powi(2);
 

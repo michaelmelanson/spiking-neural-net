@@ -7,7 +7,6 @@ extern crate pretty_env_logger;
 extern crate rand;
 
 mod simulation;
-mod hindmarsh_rose;
 
 fn main() {
     pretty_env_logger::init();
