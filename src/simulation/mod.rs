@@ -1,11 +1,13 @@
 use specs::prelude::*;
 use rand::distributions::{
-    Normal,
-    Distribution
+    Distribution,
+    Uniform,
+    Bernoulli
 };
 
 pub mod components;
 pub mod models;
+pub mod systems;
 
 use self::components::neuron::*;
 use self::components::synapse::*;
@@ -13,9 +15,17 @@ use self::components::synapse::*;
 use simulation::models::hindmarsh_rose::{
     HindmarshRoseModel,
     HindmarshRoseMorphology,
-    HindmarshRoseIntegrator,
-    HindmarshRoseCSVWriter
+    HindmarshRoseIntegrator
 };
+
+use simulation::models::izhikevich::{
+    IzhikevichModel,
+    IzhikevichMorphology,
+    IzhikevichIntegrator
+};
+
+use simulation::systems::synaptic_transmission::SynapticTransmissionSystem;
+use simulation::systems::csv_writer::CSVWriterSystem;
 
 
 #[derive(Default)]
@@ -26,22 +36,42 @@ pub fn run() {
     let mut world = World::new();
     world.register::<Neuron>();
     world.register::<Spiking>();
+    world.register::<Synapse>();
+    world.register::<ActionPotential>();
+    world.register::<DelayedPotential>();
 
     world.register::<HindmarshRoseModel>();
     world.register::<HindmarshRoseMorphology>();
 
-    let normal = Normal::new(0.0, 3.0);
+    world.register::<IzhikevichModel>();
+    world.register::<IzhikevichMorphology>();
+
+    let has_synapse = Bernoulli::new(0.8);
+    let synaptic_delay = Uniform::new(1, 20);
+    let synaptic_strength = Uniform::new(0.5, 1.0);
+    let excitory = Bernoulli::new(0.8); // what fraction of synapses are excitory
+
+    let regular_spiking = IzhikevichMorphology {
+        a: 0.02,
+        b: 0.2,
+        c: -65.,
+        d: 2.
+    };
 
     // create a bunch of neurons
     {
-        let num_neurons: u32 = 2;
+        let num_neurons: u32 = 5;
         for _ in 0..num_neurons {
             world.create_entity()
-                .with(Neuron)
+                .with(Neuron::default())
+                .with(IzhikevichModel { v: -65., u: 0.02 * -65. })
+                .with(regular_spiking.clone())
+
+                /*
                 .with(HindmarshRoseModel {
-                    x: normal.sample(&mut rand::thread_rng()),
-                    y: normal.sample(&mut rand::thread_rng()),
-                    z: normal.sample(&mut rand::thread_rng()),
+                    x: model_param.sample(&mut rand::thread_rng()),
+                    y: model_param.sample(&mut rand::thread_rng()),
+                    z: model_param.sample(&mut rand::thread_rng()),
                     i: 1.0
                 })
                 .with(HindmarshRoseMorphology {
@@ -56,6 +86,7 @@ pub fn run() {
                     t_s: 0.1,
                     epsp_amp: 0.1
                 })
+                */
                 .build();
         }
     }
@@ -65,15 +96,23 @@ pub fn run() {
         let entities = world.entities();
         let neurons = world.read_storage::<Neuron>();
         let mut synapses = world.write_storage::<Synapse>();
-        for (pre_neuron, neuron) in (&entities, &neurons).join() {
-            for (post_neuron, neuron) in (&entities, &neurons).join() {
-                if pre_neuron == post_neuron {
-                    break;
-                }
 
-                entities.build_entity()
-                    .with(Synapse { pre_neuron, post_neuron }, &mut synapses)
-                    .build();
+        let mut rng = rand::thread_rng();
+
+        for (pre_neuron, _) in (&entities, &neurons).join() {
+            for (post_neuron, _) in (&entities, &neurons).join() {
+                if has_synapse.sample(&mut rng) {
+                    let delay = synaptic_delay.sample(&mut rng);
+                    let is_excitory = excitory.sample(&mut rng);
+                    let strength = match is_excitory {
+                        true => synaptic_strength.sample(&mut rng),
+                        false => -synaptic_strength.sample(&mut rng)
+                    };
+
+                    entities.build_entity()
+                        .with(Synapse { pre_neuron, post_neuron, delay, strength }, &mut synapses)
+                        .build();
+                }
             }
         }
     }
@@ -82,7 +121,11 @@ pub fn run() {
 
     let mut dispatcher = DispatcherBuilder::new()
         .with(HindmarshRoseIntegrator, "hindmarsh_rose_integrator", &[])
-        //.with(HindmarshRoseCSVWriter, "hindmarsh_rose_csv_writer", &["hindmarsh_rose_integrator"])
+        .with(IzhikevichIntegrator, "izhikevich_integrator", &[])
+
+        .with(CSVWriterSystem, "csv_writer", &["hindmarsh_rose_integrator", "izhikevich_integrator"])
+
+        .with(SynapticTransmissionSystem, "synaptic_transmission", &["hindmarsh_rose_integrator", "izhikevich_integrator"])
         .build();
 
     debug!("Starting simulation...");

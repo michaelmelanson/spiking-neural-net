@@ -5,6 +5,9 @@ extern crate rayon;
 #[macro_use] extern crate log;
 extern crate pretty_env_logger;
 extern crate rand;
+extern crate serde;
+#[macro_use] extern crate serde_derive;
+extern crate serde_yaml;
 
 mod simulation;
 

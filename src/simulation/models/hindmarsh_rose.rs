@@ -5,9 +5,7 @@ use simulation::components::neuron::{
     Spiking,
 };
 
-use simulation::{
-    SimulationTime
-};
+use simulation::components::neuron::ActionPotential;
 
 #[derive(Component, Debug)]
 pub struct HindmarshRoseModel {
@@ -18,7 +16,7 @@ pub struct HindmarshRoseModel {
 }
 
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Deserialize)]
 pub struct HindmarshRoseMorphology {
     pub a: f64,
     pub b: f64,
@@ -50,8 +48,8 @@ impl <'a> System<'a> for HindmarshRoseIntegrator {
             // Do two 0.5ms updates. This is supposedly for numerical stability, since we're doing
             // shitty-ass Euler integration.
             //
-            // I took this idea from an implementation of Hindmarsh-Rose but haven't really verified
-            // that it's necessary.
+            // I took this idea from an implementation of the Izhikevich model, but haven't really
+            // verified that it's necessary here.
 
             for _ in 0..2 {
                 let sigma_x = -morphology.a * model.x.powi(3) + morphology.b * model.x.powi(2);
@@ -60,16 +58,20 @@ impl <'a> System<'a> for HindmarshRoseIntegrator {
                 let dx_dt = model.y + sigma_x - model.z + model.i;
                 let dy_dt = psi_x - morphology.beta * model.y;
                 let dz_dt = morphology.r * (morphology.s * (model.x - morphology.x_r) - model.z);
-                let di_dt = 0.;
+                let di_dt = neuron.psp;
 
                 model.x += 0.5 * (dx_dt / 1000.);
                 model.y += 0.5 * (dy_dt / 1000.);
                 model.z += 0.5 * (dz_dt / 1000.);
-                model.i += 0.5 * (di_dt / 1000.);
+                model.i += 0.5 * (di_dt); // this is an impulse, so it doesn't get divided by 1000
             }
 
-            if model.y > -3.5 && spikings.get(entity).is_none() {
-                updater.insert(entity, Spiking);
+            if model.y > -3.5 {
+                if spikings.get(entity).is_none() {
+                    // we weren't already spiking, so mark a new action potential
+                    updater.insert(entity, Spiking);
+                    updater.insert(entity, ActionPotential);
+                }
             } else if model.y <= -3.5 && spikings.get(entity).is_some() {
                 updater.remove::<Spiking>(entity);
             }
@@ -77,24 +79,5 @@ impl <'a> System<'a> for HindmarshRoseIntegrator {
             let spiking = spikings.get(entity);
             info!("{:?} {:?} {:?} {:?}", neuron, entity, spiking, model);
         });
-    }
-}
-
-pub struct HindmarshRoseCSVWriter;
-
-impl <'a> System<'a> for HindmarshRoseCSVWriter {
-    type SystemData = (
-        Read<'a, SimulationTime>,
-        ReadStorage<'a, HindmarshRoseModel>
-    );
-
-    fn run(&mut self, (time, models): Self::SystemData) {
-        if time.0 == 1 {
-            println!("time, x, y, z");
-        }
-
-        for (model,) in (&models,).join() {
-            println!("{}, {}, {}, {}", time.0, model.x, model.y, model.z);
-        }
     }
 }
