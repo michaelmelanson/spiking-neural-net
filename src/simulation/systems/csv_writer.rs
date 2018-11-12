@@ -15,7 +15,7 @@ pub struct CSVWriterSystem {
 impl CSVWriterSystem {
     pub fn new() -> Self {
         CSVWriterSystem {
-            trace_file: None, // Some(File::create("neuron-trace.csv").unwrap()),
+            trace_file: Some(BufWriter::new(File::create("neuron-trace.csv").unwrap())),
             spike_file: Some(BufWriter::new(File::create("spikes.out").unwrap()))
         }
     }
