@@ -26,26 +26,30 @@ use simulation::models::izhikevich::{
 
 use simulation::systems::synaptic_transmission::SynapticTransmissionSystem;
 use simulation::systems::csv_writer::CSVWriterSystem;
+use std::collections::BinaryHeap;
 
 
+pub type Time = usize;
 #[derive(Default)]
-pub struct SimulationTime(pub u64);
+pub struct SimulationTime(pub Time);
 
 
 pub fn run() {
+    info!("Setting up simulation...");
+
     let mut world = World::new();
     world.register::<Neuron>();
     world.register::<Spiking>();
     world.register::<Synapse>();
     world.register::<ActionPotential>();
-    world.register::<DelayedPotential>();
-
     world.register::<HindmarshRoseModel>();
     world.register::<HindmarshRoseMorphology>();
-
     world.register::<IzhikevichModel>();
     world.register::<IzhikevichMorphology>();
 
+    world.add_resource(SimulationTime::default());
+
+    info!("Generating network...");
     let has_synapse = Bernoulli::new(0.8);
     let synaptic_delay = Uniform::new(1, 20);
     let synaptic_strength = Uniform::new(0.5, 1.0);
@@ -58,9 +62,11 @@ pub fn run() {
         d: 2.
     };
 
+    info!("  - Neurons");
+
     // create a bunch of neurons
     {
-        let num_neurons: u32 = 5;
+        let num_neurons: u32 = 1000;
         for _ in 0..num_neurons {
             world.create_entity()
                 .with(Neuron::default())
@@ -91,6 +97,8 @@ pub fn run() {
         }
     }
 
+    info!("  - Synapses");
+
     // wire them up with synapses
     {
         let entities = world.entities();
@@ -110,25 +118,30 @@ pub fn run() {
                     };
 
                     entities.build_entity()
-                        .with(Synapse { pre_neuron, post_neuron, delay, strength }, &mut synapses)
+                        .with(Synapse {
+                            pre_neuron,
+                            post_neuron,
+                            delay,
+                            strength,
+                            pending_spikes: BinaryHeap::new()
+                        }, &mut synapses)
                         .build();
                 }
             }
         }
     }
 
-    world.add_resource(SimulationTime::default());
+    info!("Starting simulation...");
 
     let mut dispatcher = DispatcherBuilder::new()
         .with(HindmarshRoseIntegrator, "hindmarsh_rose_integrator", &[])
         .with(IzhikevichIntegrator, "izhikevich_integrator", &[])
 
-        .with(CSVWriterSystem, "csv_writer", &["hindmarsh_rose_integrator", "izhikevich_integrator"])
+        .with(CSVWriterSystem::new(), "csv_writer", &["hindmarsh_rose_integrator", "izhikevich_integrator"])
 
         .with(SynapticTransmissionSystem, "synaptic_transmission", &["hindmarsh_rose_integrator", "izhikevich_integrator"])
         .build();
 
-    debug!("Starting simulation...");
 
     loop {
         {
@@ -138,7 +151,10 @@ pub fn run() {
                 break;
             }
 
-            info!("Time {}", time.0);
+            if time.0 % 1000 == 0 {
+                info!("Time {}", time.0);
+            }
+
         }
 
         dispatcher.dispatch(&mut world.res);

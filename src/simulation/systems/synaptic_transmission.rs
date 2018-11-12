@@ -2,6 +2,7 @@ use specs::prelude::*;
 
 use simulation::components::neuron::*;
 use simulation::components::synapse::*;
+use simulation::SimulationTime;
 
 pub struct SynapticTransmissionSystem;
 
@@ -9,26 +10,19 @@ impl <'a> System<'a> for SynapticTransmissionSystem {
     type SystemData = (
         Entities<'a>,
         Read<'a, LazyUpdate>,
-        ReadStorage<'a, Synapse>,
-
-        WriteStorage<'a, Neuron>,
-        WriteStorage<'a, ActionPotential>,
-        WriteStorage<'a, DelayedPotential>
+        Read<'a, SimulationTime>,
+        WriteStorage<'a, Synapse>,
+        WriteStorage<'a, ActionPotential>
     );
 
-    fn run(&mut self, (entities, updater, synapses, mut neurons, action_potentials, mut delayed_potentials): Self::SystemData) {
+    fn run(&mut self, (entities, updater, simulation_time, mut synapses, action_potentials): Self::SystemData) {
+        let time = (*simulation_time).0;
 
         // turn action potentials into delayed spikes
-        // also clear the PSP
-        (&synapses).par_join().for_each(|synapse| {
+        (&mut synapses).par_join().for_each(|synapse| {
             if action_potentials.get(synapse.pre_neuron).is_some() {
-                updater.create_entity(&entities)
-                    .with(DelayedPotential {
-                        post_neuron: synapse.post_neuron,
-                        time_to_psp: synapse.delay,
-                        psp_amp: synapse.strength
-                    })
-                    .build();
+                let spike_time = time + synapse.delay;
+                synapse.pending_spikes.push(PendingSpike(spike_time));
             }
         });
 
@@ -40,14 +34,23 @@ impl <'a> System<'a> for SynapticTransmissionSystem {
 
         // update any delayed potentials
         // if any are now due, turn them into post-synaptic potentials
-        for (entity, mut delayed_potential) in (&entities, &mut delayed_potentials).join() {
-            delayed_potential.time_to_psp -= 1;
+        (&mut synapses).par_join().for_each(|synapse| {
+            if !synapse.pending_spikes.is_empty() && synapse.pending_spikes.peek().unwrap().0 <= time {
+                synapse.pending_spikes.pop();
 
-            if delayed_potential.time_to_psp == 0 {
-                let post = neurons.get_mut(delayed_potential.post_neuron).unwrap();
-                post.psp += delayed_potential.psp_amp;
-                updater.remove::<DelayedPotential>(entity);
+                let post_neuron = synapse.post_neuron;
+                let psp_amp = synapse.strength;
+
+                updater.exec_mut(move |world| {
+                    let mut neurons = world.write_storage::<Neuron>();
+                    let post = neurons.get_mut(post_neuron).unwrap();
+                    post.psp += psp_amp;
+
+                    debug!("Neuron {} got spike at t={} with amplitude {} (current is now {}).",
+                           post_neuron.id(), time, psp_amp, post.psp);
+
+                });
             }
-        }
+        });
     }
 }
