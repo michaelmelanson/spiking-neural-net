@@ -117,12 +117,13 @@ pub fn run() {
                 let probability = match (pre_coord.column == post_coord.column, pre_coord.layer, post_coord.layer) {
 
                     // intra-column, intra-layer connections
+                    (true, Layer::Internal, Layer::Internal)  => 0.8,
                     (true, x, y) if x == y                    => 0.4,
 
                     // intra-column, cross-layer connections
                     (true, Layer::Sensory,   Layer::Internal) => 0.8,
-                    (true, Layer::Internal,  Layer::Motor)    => 0.8,
                     (true, Layer::Afferent,  Layer::Internal) => 0.8,
+                    (true, Layer::Internal,  Layer::Motor)    => 0.8,
                     (true, Layer::Internal,  Layer::Efferent) => 0.8,
 
                     // cross-column connections
