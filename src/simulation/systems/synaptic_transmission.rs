@@ -31,7 +31,7 @@ impl <'a> System<'a> for SynapticTransmissionSystem {
                 synapse.pending_spikes.pop();
 
                 let post_neuron = synapse.post_neuron;
-                let psp_amp = synapse.strength;
+                let psp_amp = num::clamp(synapse.strength, -4., 4.);
 
                 updater.exec_mut(move |world| {
                     let mut neurons = world.write_storage::<Neuron>();

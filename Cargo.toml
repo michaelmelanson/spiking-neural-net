@@ -5,6 +5,7 @@ authors = ["Michael Melanson <michael@michaelmelanson.net>"]
 # edition = "2018"
 
 [dependencies]
+num = "0.2.0"
 specs = "0.14.1"
 specs-derive = "0.3.0"
 rayon = "1.0.3"

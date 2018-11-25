@@ -7,10 +7,12 @@ use rand::distributions::{
 
 pub mod components;
 pub mod models;
+pub mod learning;
 pub mod systems;
 
 use self::components::neuron::*;
 use self::components::synapse::*;
+use self::learning::stdp::*;
 
 use simulation::models::hindmarsh_rose::{
     HindmarshRoseModel,
@@ -47,6 +49,7 @@ pub fn run() {
     world.register::<IzhikevichModel>();
     world.register::<IzhikevichMorphology>();
     world.register::<Synapse>();
+    world.register::<STDPLearningRule>();
 
     world.add_resource(SimulationTime::default());
 
@@ -106,6 +109,7 @@ pub fn run() {
         let neurons = world.read_storage::<Neuron>();
         let coordinates = world.read_storage::<ColumnCoordinates>();
         let mut synapses = world.write_storage::<Synapse>();
+        let mut stdps = world.write_storage::<STDPLearningRule>();
 
         let mut rng = rand::thread_rng();
 
@@ -147,6 +151,7 @@ pub fn run() {
                                 strength,
                                 pending_spikes: BinaryHeap::new()
                             }, &mut synapses)
+                            .with(STDPLearningRule::default(), &mut stdps)
                             .build();
                         synapses_created += 1;
                     }
@@ -164,6 +169,7 @@ pub fn run() {
         .with(IzhikevichIntegrator, "izhikevich_integrator", &[])
 
         .with(SynapticTransmissionSystem, "synaptic_transmission", &["hindmarsh_rose_integrator", "izhikevich_integrator"])
+        .with(STDPLearningSystem, "stdp_learning", &["synaptic_transmission"])
 
         .with(CSVWriterSystem::new(), "csv_writer", &["synaptic_transmission"])
 
