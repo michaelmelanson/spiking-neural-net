@@ -39,13 +39,14 @@ pub fn run() {
 
     let mut world = World::new();
     world.register::<Neuron>();
+    world.register::<ColumnCoordinates>();
     world.register::<Spiking>();
-    world.register::<Synapse>();
     world.register::<ActionPotential>();
     world.register::<HindmarshRoseModel>();
     world.register::<HindmarshRoseMorphology>();
     world.register::<IzhikevichModel>();
     world.register::<IzhikevichMorphology>();
+    world.register::<Synapse>();
 
     world.add_resource(SimulationTime::default());
 
@@ -66,69 +67,94 @@ pub fn run() {
 
     // create a bunch of neurons
     {
-        let num_neurons: u32 = 900;
-        for _ in 0..num_neurons {
-            world.create_entity()
-                .with(Neuron::default())
-                .with(IzhikevichModel { v: -65., u: 0.02 * -65. })
-                .with(regular_spiking.clone())
+        let mut neurons_created = 0;
+        let num_columns = 20;
 
-                /*
-                .with(HindmarshRoseModel {
-                    x: model_param.sample(&mut rand::thread_rng()),
-                    y: model_param.sample(&mut rand::thread_rng()),
-                    z: model_param.sample(&mut rand::thread_rng()),
-                    i: 1.0
-                })
-                .with(HindmarshRoseMorphology {
-                    a: 1.0,
-                    b: 3.0,
-                    c: 1.0,
-                    d: 5.0,
-                    beta: 1.0,
-                    r: 0.001,
-                    s: 4.0,
-                    x_r: -1.6,
-                    t_s: 0.1,
-                    epsp_amp: 0.1
-                })
-                */
-                .build();
+        for column in 0..num_columns {
+            for layer in Layer::iter() {
+                for _ in 0..match layer {
+                    Layer::Motor => 10,
+                    Layer::Sensory => 10,
+                    Layer::Afferent => 10,
+                    Layer::Efferent => 10,
+                    Layer::Internal => 60
+                } {
+                    world.create_entity()
+                        .with(Neuron::default())
+                        .with(ColumnCoordinates {
+                            column,
+                            layer: *layer
+                        })
+                        .with(IzhikevichModel { v: -65., u: 0.02 * -65. })
+                        .with(regular_spiking.clone())
+                        .build();
+
+                    neurons_created += 1;
+                }
+            }
         }
+
+        info!("Created {} neurons", neurons_created);
     }
 
     info!("  - Synapses");
 
     // wire them up with synapses
     {
+        let mut synapses_created = 0;
         let entities = world.entities();
         let neurons = world.read_storage::<Neuron>();
+        let coordinates = world.read_storage::<ColumnCoordinates>();
         let mut synapses = world.write_storage::<Synapse>();
 
         let mut rng = rand::thread_rng();
 
-        for (pre_neuron, _) in (&entities, &neurons).join() {
-            for (post_neuron, _) in (&entities, &neurons).join() {
-                if has_synapse.sample(&mut rng) {
-                    let delay = synaptic_delay.sample(&mut rng);
-                    let is_excitory = excitory.sample(&mut rng);
-                    let strength = match is_excitory {
-                        true => synaptic_strength.sample(&mut rng),
-                        false => -synaptic_strength.sample(&mut rng)
-                    };
+        for (pre_neuron, _, pre_coord) in (&entities, &neurons, &coordinates).join() {
+            for (post_neuron, _, post_coord) in (&entities, &neurons, &coordinates).join() {
+                let probability = match (pre_coord.column == post_coord.column, pre_coord.layer, post_coord.layer) {
 
-                    entities.build_entity()
-                        .with(Synapse {
-                            pre_neuron,
-                            post_neuron,
-                            delay,
-                            strength,
-                            pending_spikes: BinaryHeap::new()
-                        }, &mut synapses)
-                        .build();
+                    // intra-layer connections
+                    (true, x, y) if x == y => 0.4,
+
+                    // cross-layer connections
+                    (true, Layer::Sensory, Layer::Internal) => 0.8,
+                    (true, Layer::Internal, Layer::Motor) => 0.8,
+                    (true, Layer::Afferent, Layer::Internal) => 0.8,
+                    (true, Layer::Internal, Layer::Efferent) => 0.8,
+
+                    // cross-column wiring
+                    (false, Layer::Efferent, Layer::Afferent) => 0.3,
+
+                    // everything else is not connected
+                    (_, _, _) => 0.
+                };
+
+                if probability > 0. {
+                    let has_synapse = Bernoulli::new(probability);
+                    if has_synapse.sample(&mut rng) {
+                        let delay = synaptic_delay.sample(&mut rng);
+                        let is_excitory = excitory.sample(&mut rng);
+                        let strength = match is_excitory {
+                            true => synaptic_strength.sample(&mut rng),
+                            false => -synaptic_strength.sample(&mut rng)
+                        };
+
+                        entities.build_entity()
+                            .with(Synapse {
+                                pre_neuron,
+                                post_neuron,
+                                delay,
+                                strength,
+                                pending_spikes: BinaryHeap::new()
+                            }, &mut synapses)
+                            .build();
+                        synapses_created += 1;
+                    }
                 }
             }
         }
+
+        info!("Created {} synapses", synapses_created);
     }
 
     info!("Starting simulation...");
