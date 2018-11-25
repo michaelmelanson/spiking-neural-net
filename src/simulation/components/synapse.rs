@@ -9,7 +9,7 @@ use simulation::Time;
 pub struct PendingSpike(pub Time);
 
 #[derive(Component)]
-#[storage(DenseVecStorage)]
+#[storage(VecStorage)]
 pub struct Synapse {
     pub pre_neuron: Entity,
     pub post_neuron: Entity,

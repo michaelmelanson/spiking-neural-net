@@ -50,7 +50,7 @@ pub fn run() {
     world.add_resource(SimulationTime::default());
 
     info!("Generating network...");
-    let has_synapse = Bernoulli::new(0.8);
+    let has_synapse = Bernoulli::new(0.7);
     let synaptic_delay = Uniform::new(1, 20);
     let synaptic_strength = Uniform::new(0.5, 1.0);
     let excitory = Bernoulli::new(0.8); // what fraction of synapses are excitory
@@ -66,7 +66,7 @@ pub fn run() {
 
     // create a bunch of neurons
     {
-        let num_neurons: u32 = 1000;
+        let num_neurons: u32 = 900;
         for _ in 0..num_neurons {
             world.create_entity()
                 .with(Neuron::default())
@@ -137,9 +137,10 @@ pub fn run() {
         .with(HindmarshRoseIntegrator, "hindmarsh_rose_integrator", &[])
         .with(IzhikevichIntegrator, "izhikevich_integrator", &[])
 
-        .with(CSVWriterSystem::new(), "csv_writer", &["hindmarsh_rose_integrator", "izhikevich_integrator"])
-
         .with(SynapticTransmissionSystem, "synaptic_transmission", &["hindmarsh_rose_integrator", "izhikevich_integrator"])
+
+        .with(CSVWriterSystem::new(), "csv_writer", &["synaptic_transmission"])
+
         .build();
 
 

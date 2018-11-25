@@ -1,7 +1,7 @@
 use specs::prelude::*;
 
 #[derive(Component, Debug, Default)]
-#[storage(DenseVecStorage)]
+#[storage(VecStorage)]
 pub struct Neuron {
     pub psp: f64 // postsynaptic potential
 }
@@ -13,3 +13,4 @@ pub struct Spiking;
 #[derive(Component, Debug, Default)]
 #[storage(NullStorage)]
 pub struct ActionPotential;
+

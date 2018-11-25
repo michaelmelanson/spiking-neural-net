@@ -51,6 +51,8 @@ impl <'a> System<'a> for IzhikevichIntegrator {
                 model.u += morphology.d;
 
                 updater.insert(entity, ActionPotential);
+            } else {
+                updater.remove::<ActionPotential>(entity);
             }
         });
     }
