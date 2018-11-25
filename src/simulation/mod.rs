@@ -55,7 +55,7 @@ pub fn run() {
 
     info!("Generating network...");
     let synaptic_delay = Uniform::new(1, 20);
-    let synaptic_strength = Uniform::new(0.5, 1.0);
+    let synaptic_strength = Uniform::new(0.5, 4.0);
     let excitory = Bernoulli::new(0.8); // what fraction of synapses are excitory
 
     let regular_spiking = IzhikevichMorphology {
@@ -75,8 +75,8 @@ pub fn run() {
         for column in 0..num_columns {
             for layer in Layer::iter() {
                 for _ in 0..match layer {
-                    Layer::Motor => 10,
-                    Layer::Sensory => 10,
+                    Layer::Motor    => 10,
+                    Layer::Sensory  => 10,
                     Layer::Afferent => 10,
                     Layer::Efferent => 10,
                     Layer::Internal => 60
@@ -116,16 +116,16 @@ pub fn run() {
             for (post_neuron, _, post_coord) in (&entities, &neurons, &coordinates).join() {
                 let probability = match (pre_coord.column == post_coord.column, pre_coord.layer, post_coord.layer) {
 
-                    // intra-layer connections
-                    (true, x, y) if x == y => 0.4,
+                    // intra-column, intra-layer connections
+                    (true, x, y) if x == y                    => 0.4,
 
-                    // cross-layer connections
-                    (true, Layer::Sensory, Layer::Internal) => 0.8,
-                    (true, Layer::Internal, Layer::Motor) => 0.8,
-                    (true, Layer::Afferent, Layer::Internal) => 0.8,
-                    (true, Layer::Internal, Layer::Efferent) => 0.8,
+                    // intra-column, cross-layer connections
+                    (true, Layer::Sensory,   Layer::Internal) => 0.8,
+                    (true, Layer::Internal,  Layer::Motor)    => 0.8,
+                    (true, Layer::Afferent,  Layer::Internal) => 0.8,
+                    (true, Layer::Internal,  Layer::Efferent) => 0.8,
 
-                    // cross-column wiring
+                    // cross-column connections
                     (false, Layer::Efferent, Layer::Afferent) => 0.3,
 
                     // everything else is not connected

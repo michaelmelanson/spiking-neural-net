@@ -17,11 +17,11 @@ pub struct ActionPotential;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Layer {
-    Sensory,
-    Motor,
-    Afferent,
-    Efferent,
-    Internal
+    Sensory,  // receives from outside world
+    Motor,    // sends to outside world
+    Afferent, // sends to other columns
+    Efferent, // receives from other columns
+    Internal  // connected only within the column
 }
 
 impl Layer {
