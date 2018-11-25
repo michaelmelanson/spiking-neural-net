@@ -8,14 +8,13 @@ pub struct SynapticTransmissionSystem;
 
 impl <'a> System<'a> for SynapticTransmissionSystem {
     type SystemData = (
-        Entities<'a>,
         Read<'a, LazyUpdate>,
         Read<'a, SimulationTime>,
         WriteStorage<'a, Synapse>,
         WriteStorage<'a, ActionPotential>
     );
 
-    fn run(&mut self, (entities, updater, simulation_time, mut synapses, action_potentials): Self::SystemData) {
+    fn run(&mut self, (updater, simulation_time, mut synapses, action_potentials): Self::SystemData) {
         let time = (*simulation_time).0;
 
         (&mut synapses).par_join().for_each(|synapse| {

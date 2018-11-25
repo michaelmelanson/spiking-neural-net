@@ -54,7 +54,6 @@ pub fn run() {
     world.add_resource(SimulationTime::default());
 
     info!("Generating network...");
-    let has_synapse = Bernoulli::new(0.7);
     let synaptic_delay = Uniform::new(1, 20);
     let synaptic_strength = Uniform::new(0.5, 1.0);
     let excitory = Bernoulli::new(0.8); // what fraction of synapses are excitory
