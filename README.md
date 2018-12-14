@@ -27,21 +27,21 @@ The simuation is written in the Rust programming language and uses (Specs)[https
 
 ### Neural models
 
-[x] Izhikevich neurons
+- [x] Izhikevich neurons
   * Model: https://www.izhikevich.org/publications/spikes.htm
   * Code: https://github.com/michaelmelanson/spiking-neural-net/blob/master/src/simulation/models/izhikevich.rs
-[x] Hindmarsh-Rose neurons
+- [x] Hindmarsh-Rose neurons
   * Model: https://en.wikipedia.org/wiki/Hindmarsh%E2%80%93Rose_model
   * Code: https://github.com/michaelmelanson/spiking-neural-net/blob/master/src/simulation/models/hindmarsh_rose.rs
 
 ### Learning models
 
-[x] Spike-timing dependent plasticity
+- [x] Spike-timing dependent plasticity
   * Code: https://github.com/michaelmelanson/spiking-neural-net/blob/master/src/simulation/learning/stdp.rs
 
 ### Network organization
 
-[x] Columnar organization
+- [x] Columnar organization
   * Networks are organized into 100-neuron columns composed of five layers (motor, sensory, afferent, efferent, internal)
   * Code: https://github.com/michaelmelanson/spiking-neural-net/blob/master/src/simulation/mod.rs#L70-L160
 
