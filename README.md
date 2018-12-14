@@ -9,13 +9,14 @@ Once you have Rust and Cargo installed, you can run a simulation with:
 
     make
   
-This will produce plot images like the ones above (`neuron-trace.png` and `spikes.png`).
-
-Note that you can also build the debug version by omitting the `--release` flag, but it will run slowly. This is good if you want to use a debugger, but if you want to simulate any reasonably large networks in real-time you will need to use release mode.
 
 You should see output like this:
 
 ![Sample output](https://github.com/michaelmelanson/spiking-neural-net/blob/master/images/sample%20output.png)
+
+This will produce plot images called `neuron-trace.png` and `spikes.png` like the ones below.
+
+Note that you can also build the debug version by omitting the `--release` flag, but it will run slowly. This is good if you want to use a debugger, but if you want to simulate any reasonably large networks in real-time you will need to use release mode.
 
 ## Sample output
 
