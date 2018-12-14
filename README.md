@@ -27,6 +27,14 @@ Filename      | Image
 `spikes.png` | ![spikes.png](https://github.com/michaelmelanson/spiking-neural-net/blob/master/images/spikes.png) You'll need to download this image and zoom in to see the activity.
 `spikes.png` (cropped) | ![spikes.png](https://github.com/michaelmelanson/spiking-neural-net/blob/master/images/spikes%20(cropped).png) This represents about 1s of time across 1100 neurons.
 
+The `spikes.png` image shows some fascinating results: 
+* In the cropped photo you can see vertical lines of dots. This shows that all the neurons in the network have synchronized and are pulsing together at about 12Hz. This is a similar rate to Alpha waves in mammalian brains.
+* Also in the cropped photo can also see horizontal lines. This is the motor layer of each column; this layer currently is weakly connected and doesn't synchronize with the rest of the neurons.
+* In the full `spikes.png` image there are three distinct phases:
+  * **0s-4s:** The network quickly settles into a 5Hz rhythm, similar to Theta waves. I believe this is when the columns are organizing themselves.
+  * **4s-10s:** The network becomes disorganized. I believe this is when the columns are learning to wire together and are trying to sort out their connections.
+  * **10s+:** The network becomes synchronized at a much faster 12Hz rhythm.
+  
 ## About the simulation
 
 This library simulates networks of biologically-inspired neurons. Spiking neural models are implemented as ordinary differential equations integrated using Euler integration at 1 millisecond resolution.
