@@ -1,13 +1,23 @@
 # spiking-neural-net [![Build Status](https://travis-ci.org/michaelmelanson/spiking-neural-net.svg?branch=master)](https://travis-ci.org/michaelmelanson/spiking-neural-net)
 A spiking neural network simulation library.
 
-## tl;dr
+## Usage
+
+You will need a Rust development environment, which you can install by visiting https://rustup.rs/ and following the instructions.
+
+Once you have Rust and Cargo installed, you can run a simulation with:
 
     make
+  
+This will produce plot images like the ones above (`neuron-trace.png` and `spikes.png`).
+
+Note that you can also build the debug version by omitting the `--release` flag, but it will run slowly. This is good if you want to use a debugger, but if you want to simulate any reasonably large networks in real-time you will need to use release mode.
 
 You should see output like this:
 
 ![Sample output](https://github.com/michaelmelanson/spiking-neural-net/blob/master/images/sample%20output.png)
+
+## Sample output
 
 It should create output images like this:
 
@@ -48,16 +58,4 @@ The simuation is written in the Rust programming language and uses (Specs)[https
 ## TODO
 - [ ] Multiple morphologies. Currently all neurons are Izhikevich 'regular spiking' neurons.
 - [ ] Configuration. Currently you need to change the source code to change the network design or neural model parameters.
-
-## Usage
-
-You will need a Rust development environment, which you can install by visiting https://rustup.rs/ and following the instructions.
-
-Once you have Rust and Cargo installed, you can run a simulation with:
-
-    make
-  
-This will produce plot images like the ones above (`neuron-trace.png` and `spikes.png`).
-
-Note that you can also build the debug version by omitting the `--release` flag, but it will run slowly. This is good if you want to use a debugger, but if you want to simulate any reasonably large networks in real-time you will need to use release mode.
 
