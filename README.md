@@ -13,7 +13,7 @@ It should create output images like this:
 
 Filename      | Image
 --------------|-----------
-`neuron-trace.png` | ![spikes.png](https://github.com/michaelmelanson/spiking-neural-net/blob/master/images/neuron-trace.png)
+`neuron-trace.png` | ![spikes.png](https://github.com/michaelmelanson/spiking-neural-net/blob/master/images/neuron-trace.png) This shows the activity of a single neuron. Each of the vertical lines is an action potential, shown as a white dot on the plots below. There's a noise floor representing random thalamic input.
 `spikes.png` | ![spikes.png](https://github.com/michaelmelanson/spiking-neural-net/blob/master/images/spikes.png) You'll need to download this image and zoom in to see the activity.
 `spikes.png` (cropped) | ![spikes.png](https://github.com/michaelmelanson/spiking-neural-net/blob/master/images/spikes%20(cropped).png) This represents about 1s of time across 1100 neurons.
 
@@ -44,6 +44,10 @@ The simuation is written in the Rust programming language and uses (Specs)[https
 - [x] Columnar organization
   * Networks are organized into 100-neuron columns composed of five layers (motor, sensory, afferent, efferent, internal)
   * Code: https://github.com/michaelmelanson/spiking-neural-net/blob/master/src/simulation/mod.rs#L70-L160
+
+## TODO
+- [ ] Multiple morphologies. Currently all neurons are Izhikevich 'regular spiking' neurons.
+- [ ] Configuration. Currently you need to change the source code to change the network design or neural model parameters.
 
 ## Usage
 
