@@ -15,7 +15,7 @@ Filename      | Image
 --------------|-----------
 `neuron-trace.png` | ![spikes.png](https://github.com/michaelmelanson/spiking-neural-net/blob/master/images/neuron-trace.png)
 `spikes.png` | ![spikes.png](https://github.com/michaelmelanson/spiking-neural-net/blob/master/images/spikes.png) 
-               Cropped: ![spikes.png](https://github.com/michaelmelanson/spiking-neural-net/blob/master/images/spikes%20(cropped).png)
+Cropped:     | ![spikes.png](https://github.com/michaelmelanson/spiking-neural-net/blob/master/images/spikes%20(cropped).png) This represents about 1s of time across 1100 neurons.
 
 ## About the simulation
 
