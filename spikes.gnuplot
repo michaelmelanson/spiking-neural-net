@@ -2,7 +2,7 @@ set title 'Network activity'
 set ylabel "Neuron"
 set xlabel "Time (ms)"
 
-set terminal png size 22000,480
+set terminal png size 22000,3915
 set output 'spikes.png'
 set palette grey
 set autoscale noextend
