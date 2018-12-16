@@ -1,11 +1,10 @@
 use specs::prelude::*;
 
-use simulation::components::neuron::{
+use crate::simulation::components::neuron::{
+    ActionPotential,
     Neuron,
     Spiking,
 };
-
-use simulation::components::neuron::ActionPotential;
 
 #[derive(Component, Debug)]
 pub struct HindmarshRoseModel {

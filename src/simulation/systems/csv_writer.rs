@@ -1,11 +1,16 @@
 use specs::prelude::*;
-use simulation::SimulationTime;
-use simulation::models::izhikevich::IzhikevichModel;
-use simulation::models::hindmarsh_rose::HindmarshRoseModel;
-use std::fs::File;
-use std::io::Write;
-use simulation::components::neuron::ActionPotential;
-use std::io::BufWriter;
+
+use crate::{
+    simulation::SimulationTime,
+    simulation::components::neuron::ActionPotential,
+    simulation::models::izhikevich::IzhikevichModel,
+    simulation::models::hindmarsh_rose::HindmarshRoseModel
+};
+
+use std::{
+    fs::File,
+    io::{Write,BufWriter}
+};
 
 pub struct CSVWriterSystem {
     pub trace_file: Option<BufWriter<File>>,
@@ -36,60 +41,62 @@ impl <'a> System<'a> for CSVWriterSystem {
 
         if time.0 == 1 {
             if let Some(ref mut trace_file) = trace_file {
-                write!(trace_file, "time");
+                write!(trace_file, "time").expect("Failed to write to trace file");
 
                 let mut neuron_id = 0;
 
                 for _model in (&izhikevich).join() {
                     neuron_id += 1;
-                    write!(trace_file, ", neuron {} membrane potential", neuron_id);
+                    write!(trace_file, ", neuron {} membrane potential", neuron_id)
+                        .expect("Failed to write to trace file");
                 }
 
                 for _model in (&hindmarsh_rose).join() {
                     neuron_id += 1;
-                    write!(trace_file, ", neuron {} membrane potential", neuron_id);
+                    write!(trace_file, ", neuron {} membrane potential", neuron_id)
+                        .expect("Failed to write to trace file");
                 }
 
-                writeln!(trace_file);
+                writeln!(trace_file).expect("Failed to write to trace file");
             }
         }
 
         if let Some(ref mut trace_file) = trace_file {
-            write!(trace_file, "{}", time.0);
+            write!(trace_file, "{}", time.0).expect("Failed to write to trace file");
         }
 
         for (entity, model) in (&entities, &izhikevich).join() {
             if let Some(ref mut trace_file) = trace_file {
-                write!(trace_file, ", {}", model.v);
+                write!(trace_file, ", {}", model.v).expect("Failed to write to trace file");
             }
 
             if let Some(ref mut spike_file) = spike_file {
                 write!(spike_file, "{} ", match action_potentials.get(entity) {
                     None => 0,
                     Some(_) => 1
-                });
+                }).expect("Failed to write to spike file");
             }
         }
 
         for (entity, model) in (&entities, &hindmarsh_rose).join() {
             if let Some(ref mut trace_file) = trace_file {
-                write!(trace_file, ", {}", model.y);
+                write!(trace_file, ", {}", model.y).expect("Failed to write to trace file");
             }
 
             if let Some(ref mut spike_file) = spike_file {
                 write!(spike_file, "{} ", match action_potentials.get(entity) {
                     None => 0,
                     Some(_) => 1
-                });
+                }).expect("Failed to write to spike file");
             }
         }
 
         if let Some(ref mut trace_file) = trace_file {
-            writeln!(trace_file);
+            writeln!(trace_file).expect("Failed to write to trace file");
         }
 
         if let Some(ref mut spike_file) = spike_file {
-            writeln!(spike_file);
+            writeln!(spike_file).expect("Failed to write to spike file");
         }
     }
 }

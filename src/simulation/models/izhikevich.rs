@@ -1,9 +1,10 @@
 use specs::prelude::*;
 
-use simulation::components::neuron::{
-    ActionPotential
+use crate::simulation::components::neuron::{
+    ActionPotential,
+    Neuron
 };
-use simulation::components::neuron::Neuron;
+
 use rand::distributions::{
     Uniform,
     Distribution

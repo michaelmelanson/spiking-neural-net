@@ -3,7 +3,7 @@
 
 use specs::prelude::*;
 use std::collections::BinaryHeap;
-use simulation::Time;
+use crate::simulation::Time;
 
 #[derive(Clone, Copy, PartialOrd, Ord, PartialEq, Eq)]
 pub struct PendingSpike(pub Time);

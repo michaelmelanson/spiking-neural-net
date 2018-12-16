@@ -1,0 +1,29 @@
+regular_spiking:
+  a: 0.02
+  b: 0.2
+  c: -65.0
+  d: 2.0
+
+instrinsictly_bursting:
+  a: 0.02
+  b: 0.2
+  c: -55.0
+  d: 4.0
+
+chattering:
+  a: 0.02
+  b: 0.2
+  c: -50
+  d: 2.0
+
+fast_spiking:
+  a: 0.1
+  b: 0.2
+  c: -65.0
+  d: 2.0
+
+low_threshold:
+  a: 0.1
+  b: 0.25
+  c: -55.0
+  d: 2.0

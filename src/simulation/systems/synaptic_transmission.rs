@@ -1,8 +1,10 @@
 use specs::prelude::*;
 
-use simulation::components::neuron::*;
-use simulation::components::synapse::*;
-use simulation::SimulationTime;
+use crate::{
+    simulation::components::neuron::*,
+    simulation::components::synapse::*,
+    simulation::SimulationTime
+};
 
 pub struct SynapticTransmissionSystem;
 

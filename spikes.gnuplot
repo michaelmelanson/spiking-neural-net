@@ -7,7 +7,9 @@ set output 'spikes.png'
 set palette grey
 set autoscale noextend
 
-set xtics 100
+set xtics 1000
+set ytics 100
+
 # set xrange [:1000]
 unset colorbox
 

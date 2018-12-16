@@ -14,20 +14,25 @@ use self::components::neuron::*;
 use self::components::synapse::*;
 use self::learning::stdp::*;
 
-use simulation::models::hindmarsh_rose::{
-    HindmarshRoseModel,
-    HindmarshRoseMorphology,
-    HindmarshRoseIntegrator
+use crate::{
+    simulation::models::{
+        izhikevich::{
+            IzhikevichModel,
+            IzhikevichMorphology,
+            IzhikevichIntegrator
+        },
+        hindmarsh_rose::{
+            HindmarshRoseModel,
+            HindmarshRoseMorphology,
+            HindmarshRoseIntegrator
+        },
+    },
+    simulation::systems::{
+        synaptic_transmission::SynapticTransmissionSystem,
+        csv_writer::CSVWriterSystem
+    },
 };
 
-use simulation::models::izhikevich::{
-    IzhikevichModel,
-    IzhikevichMorphology,
-    IzhikevichIntegrator
-};
-
-use simulation::systems::synaptic_transmission::SynapticTransmissionSystem;
-use simulation::systems::csv_writer::CSVWriterSystem;
 use std::collections::BinaryHeap;
 
 

@@ -1,7 +1,7 @@
 use specs::prelude::*;
 
-use simulation::components::synapse::Synapse;
-use simulation::components::neuron::ActionPotential;
+use crate::simulation::components::synapse::Synapse;
+use crate::simulation::components::neuron::ActionPotential;
 
 #[derive(Component, Debug)]
 #[storage(DenseVecStorage)]

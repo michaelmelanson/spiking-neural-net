@@ -2,7 +2,7 @@
 name = "neuron"
 version = "0.1.0"
 authors = ["Michael Melanson <michael@michaelmelanson.net>"]
-# edition = "2018"
+edition = "2018"
 
 [dependencies]
 num = "0.2.0"
