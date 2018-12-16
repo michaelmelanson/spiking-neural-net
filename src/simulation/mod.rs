@@ -1,4 +1,6 @@
 use specs::prelude::*;
+use log::info;
+
 use rand::distributions::{
     Distribution,
     Uniform,

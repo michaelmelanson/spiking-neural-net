@@ -1,18 +1,16 @@
 use specs::prelude::*;
+use specs_derive::Component;
 use std::slice::Iter;
 
 #[derive(Component, Debug, Default)]
-#[storage(VecStorage)]
 pub struct Neuron {
     pub psp: f64 // postsynaptic potential
 }
 
 #[derive(Component, Debug, Default)]
-#[storage(NullStorage)]
 pub struct Spiking;
 
 #[derive(Component, Debug, Default)]
-#[storage(NullStorage)]
 pub struct ActionPotential;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -40,7 +38,6 @@ impl Layer {
 
 
 #[derive(Component, Debug)]
-#[storage(VecStorage)]
 pub struct ColumnCoordinates {
     pub column: usize,
     pub layer: Layer

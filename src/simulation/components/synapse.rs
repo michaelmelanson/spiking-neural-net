@@ -2,6 +2,7 @@
 /// postsynaptic potential.
 
 use specs::prelude::*;
+use specs_derive::Component;
 use std::collections::BinaryHeap;
 use crate::simulation::Time;
 
@@ -9,11 +10,10 @@ use crate::simulation::Time;
 pub struct PendingSpike(pub Time);
 
 #[derive(Component)]
-#[storage(VecStorage)]
 pub struct Synapse {
     pub pre_neuron: Entity,
     pub post_neuron: Entity,
     pub delay: usize,
     pub strength: f64,
-    pub pending_spikes: BinaryHeap<PendingSpike>
+    pub pending_spikes: BinaryHeap<PendingSpike>,
 }

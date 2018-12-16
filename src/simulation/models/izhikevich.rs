@@ -1,4 +1,6 @@
 use specs::prelude::*;
+use specs_derive::Component;
+use serde_derive::Deserialize;
 
 use crate::simulation::components::neuron::{
     ActionPotential,
@@ -39,7 +41,7 @@ impl <'a> System<'a> for IzhikevichIntegrator {
     fn run(&mut self, (entities, updater, mut neurons, mut models, morphologies): Self::SystemData) {
         let thalamic_input = Uniform::new(0., 5.);
 
-        (&entities, &mut neurons, &mut models, &morphologies).par_join().for_each(|(entity, neuron, model, morphology)| {
+        (&entities, &mut neurons, &mut models, &morphologies).par_join().for_each(|(entity, mut neuron, mut model, morphology)| {
             let i = neuron.psp + thalamic_input.sample(&mut rand::thread_rng());
             neuron.psp = 0.;
 

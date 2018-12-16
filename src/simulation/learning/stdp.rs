@@ -1,10 +1,10 @@
 use specs::prelude::*;
+use specs_derive::Component;
 
 use crate::simulation::components::synapse::Synapse;
 use crate::simulation::components::neuron::ActionPotential;
 
 #[derive(Component, Debug)]
-#[storage(DenseVecStorage)]
 pub struct STDPLearningRule {
     pre_dt: u64,
     post_dt: u64
@@ -30,7 +30,7 @@ impl <'a> System<'a> for STDPLearningSystem {
 
     fn run(&mut self, (action_potentials, mut synapses, mut stdps): Self::SystemData) {
 
-        (&mut synapses, &mut stdps).par_join().for_each(|(synapse, stdp)| {
+        (&mut synapses, &mut stdps).par_join().for_each(|(synapse, mut stdp)| {
 
             // the maximal change in synaptic strength
             let max_ltp = 0.1;
