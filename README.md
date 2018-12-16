@@ -40,7 +40,7 @@ The `spikes.png` image shows some fascinating results:
 
 This library simulates networks of biologically-inspired neurons. Spiking neural models are implemented as ordinary differential equations integrated using Euler integration at 1 millisecond resolution.
 
-The simuation is written in the Rust programming language and uses (Specs)[https://github.com/slide-rs/specs], an Entity-Component-System framework with excellent parallelization and performance. This allows it to simulate simulate about 1800 neurons and 100k synapses, including an online learning algorithm, in real-time on a typical laptop. 
+The simuation is written in the Rust programming language and uses [Specs](https://github.com/slide-rs/specs), an Entity-Component-System framework with excellent parallelization and performance. This allows it to simulate simulate about 1800 neurons and 100k synapses, including an online learning algorithm, in real-time on a typical laptop. 
 
 ## Features
 
