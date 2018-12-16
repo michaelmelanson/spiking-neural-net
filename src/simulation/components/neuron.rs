@@ -8,9 +8,11 @@ pub struct Neuron {
 }
 
 #[derive(Component, Debug, Default)]
+#[storage(NullStorage)]
 pub struct Spiking;
 
 #[derive(Component, Debug, Default)]
+#[storage(NullStorage)]
 pub struct ActionPotential;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
