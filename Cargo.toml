@@ -13,7 +13,7 @@ log = "0.4.6"
 pretty_env_logger = "0.3.0"
 rand = "0.6.1"
 serde = "1.0.82"
-serde_derive = "1.0.82"
+serde_derive = "1.0.83"
 serde_yaml = "0.8.8"
 
 [profile.release]
