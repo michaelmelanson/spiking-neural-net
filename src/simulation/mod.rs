@@ -197,7 +197,7 @@ pub fn run() {
 
         }
 
-        dispatcher.dispatch(&mut world.res);
+        dispatcher.dispatch(&mut world);
         world.maintain();
     }
 }
