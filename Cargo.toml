@@ -14,7 +14,7 @@ pretty_env_logger = "0.4.0"
 rand = "0.6.4"
 serde = "1.0.105"
 serde_derive = "1.0.105"
-serde_yaml = "0.8.11"
+serde_yaml = "0.8.16"
 
 [profile.release]
 debug = true
